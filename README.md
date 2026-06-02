@@ -2,7 +2,7 @@
 
 **Live demo:** [workagnt.ai/delegate](https://workagnt.ai/delegate)
 
-WorkAgnt.ai is a production AI employee marketplace on Base with 84+ live agents, x402 payments, and autonomous spending. This hackathon extends WorkAgnt with **MetaMask Smart Accounts**, **ERC-7710 delegation**, **1Shot gasless relay**, and **Venice AI intelligence**.
+WorkAgnt.ai is a production AI employee marketplace on Base with 90+ live agents, x402 payments, and autonomous spending. This hackathon extends WorkAgnt with **MetaMask Smart Accounts**, **ERC-7710 delegation**, **1Shot gasless relay**, and **Venice AI intelligence**.
 
 ## What It Does
 
@@ -12,7 +12,7 @@ A user delegates scoped USDC spending permission to an orchestrator AI agent via
 1. User connects wallet and upgrades to Smart Account (EIP-7702)
 2. User creates ERC-7710 delegation: USDC, amount-capped, time-limited
 3. Venice AI decomposes the task into subtasks
-4. Venice AI embeddings match subtasks to the best agents from 84+ live agents
+4. Venice AI embeddings match subtasks to the best agents from 90+ live agents
 5. Orchestrator creates ERC-7710 **redelegations** to selected sub-agents
 6. Sub-agents redeem delegations via 1Shot relay (gasless, USDC gas)
 7. Sub-agents execute x402 calls and return results
@@ -75,16 +75,20 @@ server/
   src/
     lib/
       venice-ai.ts              # Venice AI client — 4 endpoints
+      ai.ts                     # Multi-key AI engine (6-key Groq rotation)
       delegation-manager.ts     # ERC-7710 create/redelegate/redeem/revoke
       oneshot-relayer.ts        # 1Shot relay integration (JSON-RPC)
       delegateflow-orchestrator.ts  # Main flow: decompose -> match -> delegate -> execute -> synthesize
+      seed-friday-agent.ts      # Friday orchestrator agent seeder
+      credit-consumption.ts     # Transactional credit system
     routes/
-      delegateflow.ts           # Express API routes for /api/delegateflow/*
+      delegateflow.ts           # Express API routes + SSE streaming for /api/delegateflow/*
 
 app/
   src/
     pages/
       DelegateFlowPage.tsx      # Full demo UI — wallet, task, progress, chain viz, report
+      FridayAgentPage.tsx       # Friday AI hiring manager — product UX wrapping DelegateFlow
     hooks/
       useSmartAccount.ts        # MetaMask EIP-7702 smart account upgrade
       useDelegation.ts          # ERC-7710 delegation creation + redelegation
@@ -97,6 +101,19 @@ app/
 - **1Shot Relayer** — Permissionless gasless relay at `relayer.1shotapi.com`
 - **x402 Protocol** — HTTP 402 micropayments in USDC on Base
 - **Base Mainnet** — Chain ID 8453, USDC at `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+
+## Recent Improvements (Post-Submission)
+
+Since initial submission, the DelegateFlow engine has been hardened:
+
+- **SSE Streaming** — Real-time step-by-step progress via Server-Sent Events with 15s keepalive
+- **DB-Backed Locks** — Prevents duplicate delegation runs (409 Conflict on concurrent attempts)
+- **Relay Fee Accounting** — `RELAY_FEE_PER_AGENT = 0.01 USDC` deducted before budget allocation
+- **6-Key AI Rotation** — Groq free-tier key rotation for 600K tokens/day capacity
+- **Friday Agent** — Product-ready AI hiring manager wrapping the raw DelegateFlow protocol
+- **Credit Consumption Fix** — Drizzle 0.38+ compatibility for transactional credit deductions
+- **Disconnect Cleanup** — Graceful lock release on client abort/disconnect
+- **Activity Feed** — Merged service receipts + agent spending for full proof timeline
 
 ## Integration with Production
 
